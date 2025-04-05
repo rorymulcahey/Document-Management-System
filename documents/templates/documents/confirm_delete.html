@@ -1,0 +1,25 @@
+<!-- documents/templates/documents/confirm_delete.html -->
+
+{% extends "base.html" %}
+{% block title %}Delete Document{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+  <div class="card border-danger">
+    <div class="card-header bg-danger text-white">
+      Confirm Document Deletion
+    </div>
+    <div class="card-body">
+      <p class="lead">Are you sure you want to delete this document?</p>
+      <p><strong>{{ document.title }}</strong></p>
+      <p class="text-muted">This action will hide the document from all users, but it will not be permanently deleted.</p>
+
+      <form method="post">
+        {% csrf_token %}
+        <a href="{% url 'documents:detail' document.id %}" class="btn btn-secondary">Cancel</a>
+        <button type="submit" class="btn btn-danger">Confirm Delete</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

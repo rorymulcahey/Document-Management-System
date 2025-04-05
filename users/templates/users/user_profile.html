@@ -1,0 +1,88 @@
+<!-- users/templates/users/user_profile.html -->
+{% extends "base.html" %}
+{% block title %}{{ profile_user.username }}{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+
+  <div class="card mb-4">
+    <div class="card-body">
+      <h3 class="card-title">{{ profile_user.username }}</h3>
+      <p class="text-muted">{{ profile_user.email|default:"No email provided" }}</p>
+      <p>
+        {% if profile_user.is_superuser %}
+          <span class="badge bg-danger">Admin</span>
+        {% elif profile_user.is_staff %}
+          <span class="badge bg-secondary">Staff</span>
+        {% else %}
+          <span class="badge bg-info text-dark">User</span>
+        {% endif %}
+      </p>
+      <a href="{% url 'users:list' %}" class="btn btn-outline-primary btn-sm">← Back to Users</a>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6 mb-4">
+      <div class="card h-100">
+        <div class="card-header bg-light fw-bold">Created Projects</div>
+        <div class="card-body">
+          {% if created_projects %}
+            <ul class="list-group list-group-flush">
+              {% for project in created_projects %}
+                <li class="list-group-item">
+                  <strong>{{ project.name }}</strong><br>
+                  <small class="text-muted">{{ project.description|default:"No description" }}</small>
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="text-muted">No projects created.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 mb-4">
+      <div class="card h-100">
+        <div class="card-header bg-light fw-bold">Created Documents</div>
+        <div class="card-body">
+          {% if created_documents %}
+            <ul class="list-group list-group-flush">
+              {% for doc in created_documents %}
+                <li class="list-group-item">
+                  <strong>{{ doc.title }}</strong><br>
+                  <small class="text-muted">in {{ doc.project.name }}</small>
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="text-muted">No documents created.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-header bg-light fw-bold">Comments</div>
+    <div class="card-body">
+      {% if comments %}
+        <ul class="list-group list-group-flush">
+          {% for comment in comments %}
+            <li class="list-group-item">
+              <small class="text-muted">{{ comment.created_at|date:"Y-m-d H:i" }}</small><br>
+              <strong>{{ comment.document.title }}</strong>
+              {% if comment.version %}(v{{ comment.version.version_number }}){% endif %}
+              <div class="mt-2">{{ comment.body|linebreaksbr }}</div>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="text-muted">No comments posted.</p>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,82 @@
+
+body {
+  font-family: "Segoe UI", sans-serif;
+  background-color: #f3f4f6;
+  color: #333;
+  margin: 0;
+  padding: 0;
+}
+
+.navbar {
+  background-color: #0078d4;
+}
+
+.navbar a, .navbar .navbar-brand, .navbar .dropdown-toggle {
+  color: #fff !important;
+}
+
+/* Highlight nav buttons on hover */
+.navbar-nav .nav-item:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-color: white;
+  transition: background-color 0.2s ease;
+}
+
+.navbar-nav .nav-item:hover .nav-link {
+  color: #fff;
+}
+
+.sidebar {
+  background-color: #ffffff;
+  min-height: 100vh;
+  box-shadow: 0 0 5px rgba(0,0,0,0.1);
+}
+
+.card {
+  border: none;
+  box-shadow: 0 0 4px rgba(0,0,0,0.05);
+}
+
+.card-header {
+  background-color: #f3f3f3;
+  font-weight: 600;
+}
+
+.btn-primary {
+  background-color: #0078d4;
+  border-color: #0078d4;
+}
+
+.btn-primary:hover {
+  background-color: #005a9e;
+  border-color: #005a9e;
+}
+
+.badge-role {
+  font-size: 0.75rem;
+  padding: 0.35em 0.6em;
+  border-radius: 0.2rem;
+}
+
+.badge-commenter {
+  background-color: #d9edf7;
+  color: #31708f;
+}
+
+.badge-editor {
+  background-color: #fcf8e3;
+  color: #8a6d3b;
+}
+
+.badge-owner {
+  background-color: #dff0d8;
+  color: #3c763d;
+}
+
+/* Custom hover effect for clickable list-group items */
+a.list-group-item.list-group-item-action:hover {
+    background-color: #f0f8ff; /* light blue hover */
+    border-left: 4px solid #0d6efd; /* Bootstrap primary */
+    text-decoration: none;
+    transition: all 0.2s ease-in-out;
+}

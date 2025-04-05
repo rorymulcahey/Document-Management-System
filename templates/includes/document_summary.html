@@ -1,0 +1,41 @@
+<!-- templates/includes/document_summary.html 
+
+Explanation:
+Document Title & Description: Displays the document's title and description.
+
+Latest Version: Displays the latest version's number, upload date, and any notes associated with it.
+
+Document Actions: Provides options for the user to either edit or comment on the document, based on their permissions.
+
+This template can be used as a reusable block wherever document summaries are required in the application.
+
+-->
+
+<div class="document-summary">
+    <h3>{{ document.title }}</h3>
+    <p>{{ document.description }}</p>
+
+    <div class="document-version">
+        <strong>Latest Version:</strong>
+        {% if document.latest_version %}
+            <span>v{{ document.latest_version.version_number }} (Uploaded on {{ document.latest_version.uploaded_at|date:"Y-m-d" }})</span>
+            <br>
+            <small>Notes: {{ document.latest_version.notes }}</small>
+        {% else %}
+            <span>No version available</span>
+        {% endif %}
+    </div>
+
+    <div class="document-actions">
+        {% if user.is_authenticated %}
+            {% if can_edit_document(user, document) %}
+                <a href="{% url 'documents:edit' document.id %}">Edit</a>
+            {% endif %}
+            {% if can_comment_on_document(user, document) %}
+                <a href="{% url 'documents:comment' document.id %}">Comment</a>
+            {% endif %}
+        {% else %}
+            <p>Log in to comment or edit this document.</p>
+        {% endif %}
+    </div>
+</div>

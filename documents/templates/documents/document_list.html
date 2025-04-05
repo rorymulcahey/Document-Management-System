@@ -1,0 +1,34 @@
+<!-- documents/templates/documents/document_list.html -->
+{% extends "base.html" %}
+{% load core_extras %}
+
+{% block title %}Your Documents{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center">
+  <h1 class="mb-0">Documents</h1>
+  <a href="{% url 'documents:create' %}" class="btn btn-outline-primary">📁 New Document</a>
+</div>
+
+<div class="list-group mt-4">
+  {% for document in documents %}
+    <a href="{% url 'documents:detail' document.id %}" class="list-group-item list-group-item-action">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <strong>{{ document.title }}</strong><br>
+          <small class="text-muted">in {{ document.project.name }}</small>
+        </div>
+        <div class="d-flex align-items-center">
+          <span class="badge 
+                      {% if user_roles|dict_get:document.id == "owner" %}bg-primary
+                      {% elif user_roles|dict_get:document.id == "editor" %}bg-success
+                      {% else %}bg-secondary{% endif %}">
+            {{ user_roles|dict_get:document.id|default:"member"|capfirst }}
+          </span>
+        </div>
+      </div>
+    </a>
+  {% empty %}
+    <div class="text-muted">No accessible documents.</div>
+  {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,45 @@
+# .gitignore
+
+# Byte-compiled / cache files
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Django migrations
+*/migrations/*
+!*/migrations/__init__.py
+
+# Environment files
+.env
+*.env
+
+# Virtual Environment
+document_mgmt_venv/
+
+# SQLite
+*.sqlite3
+*.db
+
+# Secret keys / credentials
+secrets.json
+
+# Static + media (collected/generated)
+staticfiles/
+media/
+
+# VSCode / JetBrains / IDE stuff
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git itself
+*.swp
+*.bak
+*.tmp
+*.log
+
+# Personal Files
+_personal/

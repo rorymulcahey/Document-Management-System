@@ -1,0 +1,30 @@
+# documents/urls.py
+
+from django.urls import path
+from documents.views import document, share, comment
+from auditlog.views import audit_log_filtered_view 
+
+app_name = "documents"
+
+urlpatterns = [
+    # Document list and detail
+    path("", document.document_list, name="list"),
+    path("create/", document.document_create, name="create"),
+    path("<int:doc_id>/edit/", document.document_edit, name="edit"),
+    path("<int:doc_id>/delete/", document.delete_document, name="delete"),
+    path("<int:doc_id>/", document.document_detail, name="detail"),
+
+    # Upload a new version
+    path("<int:doc_id>/upload/", document.upload_version, name="upload"),
+
+    # Share/unshare/change-role (POST only)
+    path("<int:document_id>/share/", share.share_document_view, name="share"),
+    path("<int:document_id>/unshare/", share.unshare_document_view, name="unshare"),
+    path("<int:document_id>/change-role/", share.change_role_view, name="change_role"),
+
+    # Comments
+    path("<int:document_id>/comment/", comment.post_comment, name="comment"),
+
+    # Auditlog view 
+    path("<int:document_id>/audit/", audit_log_filtered_view, name="audit_log"),
+]

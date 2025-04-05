@@ -1,0 +1,40 @@
+<!-- projects/templates/projects/project_list.html -->
+{% extends "base.html" %}
+{% load core_extras %}
+
+{% block title %}Projects{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center">
+  <h1 class="mb-0">Projects</h1>
+  <a href="{% url 'projects:create' %}" class="btn btn-outline-success">➕ New Project</a>
+</div>
+
+<div class="list-group mt-4">
+  {% for project in projects %}
+    <a href="{% url 'projects:detail' project.id %}" class="list-group-item list-group-item-action">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <strong>{{ project.name }}</strong><br>
+          <small class="text-muted">
+            {% if project.description %}
+              {{ project.description|truncatechars:80 }}
+            {% else %}
+              No description
+            {% endif %}
+          </small>
+        </div>
+        <div class="d-flex align-items-center">
+          <span class="badge 
+                      {% if user_roles|dict_get:project.id == "owner" %}bg-primary
+                      {% elif user_roles|dict_get:project.id == "editor" %}bg-success
+                      {% else %}bg-secondary{% endif %}">
+            {{ user_roles|dict_get:project.id|default:"Member"|capfirst }}
+          </span>
+        </div>
+      </div>
+    </a>
+  {% empty %}
+    <div class="text-muted">No projects available.</div>
+  {% endfor %}
+</div>
+{% endblock %}

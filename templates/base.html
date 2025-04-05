@@ -1,0 +1,63 @@
+<!-- templates/base.html -->
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Document Management{% endblock %}</title>
+
+  <!-- Styles -->
+  <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary px-3">
+    <div class="container-fluid">
+      <a class="navbar-brand text-white" href="{% url 'home' %}">Doc Mgmt</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse justify-content-between ps-5" id="navbarNav">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item border rounded px-2 mx-1">
+            <a class="nav-link text-white" href="{% url 'projects:list' %}">Projects</a>
+          </li>
+          <li class="nav-item border rounded px-2 mx-1">
+            <a class="nav-link text-white" href="{% url 'documents:list' %}">Documents</a>
+          </li>
+          <li class="nav-item border rounded px-2 mx-1">
+            <a class="nav-link text-white" href="{% url 'users:list' %}">Users</a>
+          </li>
+        </ul>
+
+        {% if user.is_authenticated %}
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">
+                {{ user.username }}
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="{% url 'logout' %}" style="color: #212529 !important; background-color: #fff !important;">Logout</a></li>
+              </ul>
+            </li>
+          </ul>
+        {% else %}
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item"><a class="nav-link text-white" href="{% url 'login' %}">Login</a></li>
+          </ul>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+
+  <main class="container my-4">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Scripts -->
+  <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+  <script src="{% static 'js/scripts.js' %}" defer></script>
+</body>
+</html>

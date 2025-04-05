@@ -1,0 +1,15 @@
+<!-- projects/templates/projects/project_create.html -->
+
+{% extends 'base.html' %}
+
+{% block title %}Create Project{% endblock %}
+
+{% block content %}
+<h2>Create New Project</h2>
+
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit" class="btn btn-primary">Create Project</button>
+</form>
+{% endblock %}
