@@ -1,41 +1,40 @@
-<!-- templates/includes/document_summary.html 
+<!-- templates/includes/document_summary.html (unused card layout)-->
 
-Explanation:
-Document Title & Description: Displays the document's title and description.
+{% load core_extras %}
+<div class="card h-100 shadow-sm border-0">
+	<div class="card-body d-flex flex-column justify-content-between">
+		<h5 class="card-title">
+			<a href="{% url 'documents:detail' document.id %}" class="stretched-link text-decoration-none text-dark">
+				{{ document.title }}
+			</a>
+		</h5>
 
-Latest Version: Displays the latest version's number, upload date, and any notes associated with it.
+		<p class="card-text text-muted small mb-2">
+			in <strong>{{ document.project.name }}</strong><br>
+			Created {{ document.created_at|date:"M d, Y" }}
+		</p>
 
-Document Actions: Provides options for the user to either edit or comment on the document, based on their permissions.
+		<!-- Document action links -->
+		<div class="document-actions mb-3">
+			{% if user.is_authenticated %}
+				{% if can_edit|dict_get:document.id %}
+					<a href="{% url 'documents:edit' document.id %}" class="btn btn-sm btn-outline-secondary me-2">✏️ Edit</a>
+				{% endif %}
+				{% if can_comment|dict_get:document.id %}
+					<a href="{% url 'documents:comment' document.id %}" class="btn btn-sm btn-outline-secondary">💬 Comment</a>
+				{% endif %}
+			{% endif %}
+		</div>
 
-This template can be used as a reusable block wherever document summaries are required in the application.
-
--->
-
-<div class="document-summary">
-    <h3>{{ document.title }}</h3>
-    <p>{{ document.description }}</p>
-
-    <div class="document-version">
-        <strong>Latest Version:</strong>
-        {% if document.latest_version %}
-            <span>v{{ document.latest_version.version_number }} (Uploaded on {{ document.latest_version.uploaded_at|date:"Y-m-d" }})</span>
-            <br>
-            <small>Notes: {{ document.latest_version.notes }}</small>
-        {% else %}
-            <span>No version available</span>
-        {% endif %}
-    </div>
-
-    <div class="document-actions">
-        {% if user.is_authenticated %}
-            {% if can_edit_document(user, document) %}
-                <a href="{% url 'documents:edit' document.id %}">Edit</a>
-            {% endif %}
-            {% if can_comment_on_document(user, document) %}
-                <a href="{% url 'documents:comment' document.id %}">Comment</a>
-            {% endif %}
-        {% else %}
-            <p>Log in to comment or edit this document.</p>
-        {% endif %}
-    </div>
+		<!-- Role badge at the bottom -->
+		<div class="mt-auto d-flex justify-content-end">
+			<span class="badge 
+				{% if role == 'owner' %}bg-primary
+				{% elif role == 'editor' %}bg-success
+				{% else %}bg-secondary
+				{% endif %}">
+				{{ role|default:"member"|capfirst }}
+			</span>
+		</div>
+	</div>
 </div>

@@ -7,27 +7,30 @@ from documents.models import Document
 from documents.forms import DocumentUploadForm, DocumentForm
 from core.permissions import can_edit_document, has_document_role, get_user_document_role
 from projects.models import ProjectMembership
-from core.permissions import get_user_document_role
+from core.permissions import get_user_document_role, can_edit_document, can_comment_on_document
 from django.contrib import messages
 
 @login_required
 def document_list(request):
-    documents = Document.objects.select_related("project").filter(active=True).distinct()
-# documents = Document.objects.select_related("project").filter(active=True, project__memberships__user=request.user).distinct()
-    memberships = ProjectMembership.objects.filter(user=request.user).select_related("project")
-    membership_map = {m.project_id: m.role for m in memberships}
+	documents = Document.objects.select_related("project").filter(active=True).distinct()
 
-    user_roles = {doc.id: membership_map.get(doc.project_id, "member") for doc in documents}
+	# Preload all user memberships
+	memberships = ProjectMembership.objects.filter(user=request.user).select_related("project")
+	membership_map = {m.project_id: m.role for m in memberships}
 
-    for doc in documents:
-        membership = ProjectMembership.objects.filter(project=doc.project, user=request.user).first()
-        user_roles[doc.id] = membership.role if membership else "member"
+	# Role per document based on project
+	user_roles = {doc.id: membership_map.get(doc.project_id, "member") for doc in documents}
 
-    return render(request, "documents/document_list.html", {
-        "documents": documents,
-        "user_roles": user_roles
-    })
+	# Permission flags (for template use)
+	can_edit = {doc.id: can_edit_document(request.user, doc) for doc in documents}
+	can_comment = {doc.id: can_comment_on_document(request.user, doc) for doc in documents}
 
+	return render(request, "documents/document_list.html", {
+		"documents": documents,
+		"user_roles": user_roles,
+		"can_edit": can_edit,
+		"can_comment": can_comment,
+	})
 
 
 @login_required

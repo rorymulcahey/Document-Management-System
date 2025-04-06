@@ -3,32 +3,68 @@
 {% load core_extras %}
 
 {% block title %}Your Documents{% endblock %}
+
 {% block content %}
-<div class="d-flex justify-content-between align-items-center">
-  <h1 class="mb-0">Documents</h1>
-  <a href="{% url 'documents:create' %}" class="btn btn-outline-primary">📁 New Document</a>
+<div class="d-flex justify-content-between align-items-center mb-3">
+	<h1 class="mb-0">Documents</h1>
+	<a href="{% url 'documents:create' %}" class="btn btn-outline-primary">📁 New Document</a>
 </div>
 
-<div class="list-group mt-4">
-  {% for document in documents %}
-    <a href="{% url 'documents:detail' document.id %}" class="list-group-item list-group-item-action">
-      <div class="d-flex justify-content-between align-items-center">
-        <div>
-          <strong>{{ document.title }}</strong><br>
-          <small class="text-muted">in {{ document.project.name }}</small>
-        </div>
-        <div class="d-flex align-items-center">
-          <span class="badge 
-                      {% if user_roles|dict_get:document.id == "owner" %}bg-primary
-                      {% elif user_roles|dict_get:document.id == "editor" %}bg-success
-                      {% else %}bg-secondary{% endif %}">
-            {{ user_roles|dict_get:document.id|default:"member"|capfirst }}
-          </span>
-        </div>
-      </div>
-    </a>
-  {% empty %}
-    <div class="text-muted">No accessible documents.</div>
-  {% endfor %}
+<div class="table-responsive">
+	<table class="table table-hover align-middle">
+		<thead class="table-light">
+			<tr>
+				<th>Title</th>
+				<th>Project</th>
+				<th>Latest Version</th>
+				<th>Created</th>
+				<th>Role</th>
+				<th>Actions</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for document in documents %}
+			<tr>
+				<td>
+					<a href="{% url 'documents:detail' document.id %}" class="fw-semibold text-decoration-none">
+						{{ document.title }}
+					</a>
+				</td>
+				<td>{{ document.project.name }}</td>
+				<td>
+					{% if document.latest_version %}
+						v{{ document.latest_version.version_number }}<br>
+						<small class="text-muted">{{ document.latest_version.uploaded_at|date:"M d, Y" }}</small>
+					{% else %}
+						<em>None</em>
+					{% endif %}
+				</td>
+				<td>{{ document.created_at|date:"M d, Y" }}</td>
+				<td>
+					<span class="badge 
+						{% if user_roles|dict_get:document.id == 'owner' %}bg-primary
+						{% elif user_roles|dict_get:document.id == 'editor' %}bg-success
+						{% else %}bg-secondary{% endif %}">
+						{{ user_roles|dict_get:document.id|default:"member"|capfirst }}
+					</span>
+				</td>
+				<td>
+					{% if user.is_authenticated %}
+						{% if can_edit|dict_get:document.id %}
+							<a href="{% url 'documents:edit' document.id %}" class="btn btn-sm btn-outline-secondary me-2">✏️ Edit</a>
+						{% endif %}
+						{% if can_comment|dict_get:document.id %}
+							<a href="{% url 'documents:comment' document.id %}" class="btn btn-sm btn-outline-secondary">💬 Comment</a>
+						{% endif %}
+					{% else %}
+						<em>Log in to interact</em>
+					{% endif %}
+				</td>
+			</tr>
+			{% empty %}
+			<tr><td colspan="6" class="text-muted">No accessible documents.</td></tr>
+			{% endfor %}
+		</tbody>
+	</table>
 </div>
 {% endblock %}
