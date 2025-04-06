@@ -1,3 +1,5 @@
+# config\urls.py
+
 import os
 from django.http import Http404
 from django.urls import re_path
@@ -7,6 +9,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from core.views import dashboard
 from django.contrib.auth import views as auth_views
+from django.views.static import serve as static_serve
 
 def safe_serve(request, path, document_root=None, show_indexes=False):
     full_path = os.path.join(document_root, path)

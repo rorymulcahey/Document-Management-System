@@ -61,7 +61,7 @@ def upload_version(request, doc_id):
         form = DocumentUploadForm(request.POST, request.FILES, user=request.user, document=document)
         if form.is_valid():
             form.save()
-            return redirect("document_detail", doc_id=document.id)
+            return redirect("documents:detail", doc_id=document.id)
     else:
         form = DocumentUploadForm(user=request.user, document=document)
 

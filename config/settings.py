@@ -102,9 +102,10 @@ STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 
-# File uploads (local initially, Azure planned later)
+# File uploads 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+STORAGE_BACKEND = "windows"  # options: "windows", "azure"
 
 # Celery (with Redis)
 CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/0")
