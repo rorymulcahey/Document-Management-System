@@ -46,6 +46,11 @@ def get_user_document_role(user: User, document: Document) -> str | None:
     return None
 
 
+def can_view_document(user, document):
+	membership = document.project.memberships.filter(user=user).first()
+	return membership is not None
+
+
 def can_edit_document(user: User, document: Document) -> bool:
     return has_document_role(user, document, "editor") or has_document_role(user, document, "owner")
 
