@@ -10,12 +10,30 @@ from django.conf.urls.static import static
 from core.views import dashboard
 from django.contrib.auth import views as auth_views
 from django.views.static import serve as static_serve
+from core.views import dashboard
+from core.permissions import can_view_document
+from documents.models import Document
+from django.contrib.auth.decorators import login_required
 
+@login_required
 def safe_serve(request, path, document_root=None, show_indexes=False):
-    full_path = os.path.join(document_root, path)
-    if not os.path.exists(full_path):
-        raise Http404("Requested media file was not found.")
-    return static_serve(request, path, document_root=document_root, show_indexes=show_indexes)
+	# Expecting: documents/<doc_id>/versions/<version_number>/filename
+	try:
+		parts = path.split('/')
+		doc_id = int(parts[1])  # documents/1/versions/3/filename
+		document = Document.objects.get(id=doc_id)
+	except (IndexError, ValueError, Document.DoesNotExist):
+		raise Http404("Invalid document path.")
+
+	if not can_view_document(request.user, document):
+		raise Http404("You do not have access to this file.")
+
+	full_path = os.path.join(document_root, path)
+	if not os.path.exists(full_path):
+		raise Http404("File not found.")
+
+	return static_serve(request, path, document_root=document_root, show_indexes=show_indexes)
+
 	
 urlpatterns = [
     # Django Admin
