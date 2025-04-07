@@ -11,16 +11,9 @@ from core.permissions import get_user_document_role, can_edit_document, can_comm
 from django.contrib import messages
 from django.contrib.auth.models import User
 from projects.models import Project
-<<<<<<< HEAD
-<<<<<<< HEAD
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_protect
-=======
->>>>>>> 952f07e (Create filtering for documents)
-=======
-from django.views.decorators.http import require_POST
-from django.views.decorators.csrf import csrf_protect
->>>>>>> 2280b8f (Convert document title to inline editable)
+
 
 @login_required
 def document_list(request):
