@@ -63,6 +63,7 @@ urlpatterns = [
 if settings.DEBUG:
     urlpatterns += [
         re_path(r'^media/(?P<path>.*)$', safe_serve, {'document_root': settings.MEDIA_ROOT}),
+		path("dev/", include("documents.urls_dev")), 
     ]
 
 handler403 = "core.views.permission_denied_view"

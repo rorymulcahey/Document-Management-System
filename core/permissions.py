@@ -28,39 +28,54 @@ def has_document_role(user: User, document: Document, role: str) -> bool:
 
 
 def get_user_document_role(user: User, document: Document) -> str | None:
-    """
-    Returns the highest role a user has for a given document, or None.
-    Role hierarchy: owner > editor > commenter
-    """
-    if not user or not document:
-        return None
+	"""
+	Returns the highest role a user has for a given document, or None.
+	Role hierarchy: owner > editor > commenter
+	"""
+	if not user or not document:
+		return None
 
-    perms = set(get_perms(user, document))
+	perms = set(get_perms(user, document))
 
-    if ROLE_PERM_MAP["owner"] in perms:
-        return "owner"
-    if ROLE_PERM_MAP["editor"] in perms:
-        return "editor"
-    if ROLE_PERM_MAP["commenter"] in perms:
-        return "commenter"
-    return None
+	if ROLE_PERM_MAP["owner"] in perms:
+		return "owner"
+	if ROLE_PERM_MAP["editor"] in perms:
+		return "editor"
+	if ROLE_PERM_MAP["commenter"] in perms:
+		return "commenter"
+		
+	membership = document.project.memberships.filter(user=user).first()
+	if membership:
+		return membership.role
+
+	return None
 
 
 def can_view_document(user, document):
-	membership = document.project.memberships.filter(user=user).first()
-	return membership is not None
+	return document.project.memberships.filter(user=user).exists()
 
 
 def can_edit_document(user: User, document: Document) -> bool:
-    return has_document_role(user, document, "editor") or has_document_role(user, document, "owner")
+	return (
+		has_document_role(user, document, "editor") or
+		has_document_role(user, document, "owner") or
+		document.project.memberships.filter(user=user, role__in=["editor", "owner"]).exists()
+	)
 
 
 def can_comment_on_document(user: User, document: Document) -> bool:
-    return has_document_role(user, document, "commenter") or can_edit_document(user, document)
+	return (
+		has_document_role(user, document, "commenter") or
+		can_edit_document(user, document) or
+		document.project.memberships.filter(user=user, role="commenter").exists()
+	)
 
 
 def can_manage_permissions(user: User, document: Document) -> bool:
-    """
-    Returns True if the user is the owner of the document and can share/unshare.
-    """
-    return has_document_role(user, document, "owner")
+	"""
+	Returns True if the user is the owner of the document and can share/unshare.
+	"""
+	return (
+		has_document_role(user, document, "owner") or
+		document.project.memberships.filter(user=user, role="owner").exists()
+	)

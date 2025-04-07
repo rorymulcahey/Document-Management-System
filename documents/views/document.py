@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 from documents.models import Document
 from documents.forms import DocumentUploadForm, DocumentForm
-from core.permissions import can_edit_document, has_document_role, get_user_document_role
+from core.permissions import (can_edit_document, has_document_role, get_user_document_role,can_comment_on_document, can_manage_permissions)
 from projects.models import ProjectMembership
 from core.permissions import get_user_document_role, can_edit_document, can_comment_on_document
 from django.contrib import messages
@@ -35,18 +35,23 @@ def document_list(request):
 
 @login_required
 def document_detail(request, doc_id):
-    document = get_object_or_404(Document, id=doc_id, active=True)
+	document = get_object_or_404(Document, id=doc_id, active=True)
 
-    versions = document.versions.all()
-    comments = document.comments.select_related("user", "version")
-    membership = ProjectMembership.objects.filter(project=document.project, user=request.user).first()
-    user_role = membership.role if membership else None
+	versions = document.versions.all()
+	comments = document.comments.select_related("user", "version")
+	user_role = get_user_document_role(request.user, document)
+	can_edit = can_edit_document(request.user, document)
+	can_comment = can_comment_on_document(request.user, document)
+	can_manage = can_manage_permissions(request.user, document)
 
-    return render(request, "documents/document_detail.html", {
-        "document": document,
-        "versions": versions,
-        "comments": comments,
-        "user_role": user_role,
+	return render(request, "documents/document_detail.html", {
+		"document": document,
+		"versions": versions,
+		"comments": comments,
+		"user_role": user_role,
+		"can_edit": can_edit,
+		"can_comment": can_comment,
+		"can_manage": can_manage,
     })
 
 

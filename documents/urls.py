@@ -1,6 +1,7 @@
 # documents/urls.py
 
-from django.urls import path
+from django.conf import settings
+from django.urls import path, include
 from documents.views import document, share, comment
 from auditlog.views import audit_log_filtered_view 
 
@@ -28,3 +29,9 @@ urlpatterns = [
     # Auditlog view 
     path("<int:document_id>/audit/", audit_log_filtered_view, name="audit_log"),
 ]
+
+if settings.DEBUG:
+	urlpatterns += [
+		path("dev/", include("documents.urls_dev")),
+	]
+	
