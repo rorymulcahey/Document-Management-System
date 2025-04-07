@@ -50,7 +50,8 @@ python manage.py populate_dummy_data
 
 ## ⚙️ Developer Notes
 
-- Uses `django-guardian` for per-object access control
+- Role-based access control is implemented using a `ProjectMembership` model (owner, editor, commenter).
+- `django-guardian` is installed for potential future use (document-level permissions), but is not currently active.
 - SharePoint CSV imports via `documents/importers/sharepoint_import.py`
 
 ---
