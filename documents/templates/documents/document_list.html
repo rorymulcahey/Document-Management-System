@@ -2,13 +2,40 @@
 {% extends "base.html" %}
 {% load core_extras %}
 
-{% block title %}Your Documents{% endblock %}
-
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
 	<h1 class="mb-0">Documents</h1>
 	<a href="{% url 'documents:create' %}" class="btn btn-outline-primary">📁 New Document</a>
 </div>
+<form method="get" class="row g-2 mb-3">
+	<div class="col-md-4">
+		<input type="text" name="title" class="form-control" placeholder="Search by Title"
+		       value="{{ title_query }}">
+	</div>
+	<div class="col-md-3">
+		<select name="project" class="form-select">
+			<option value="">All Projects</option>
+			{% for project in projects %}
+				<option value="{{ project.id }}" {% if project.id|stringformat:"s" == project_id %}selected{% endif %}>
+					{{ project.name }}
+				</option>
+			{% endfor %}
+		</select>
+	</div>
+	<div class="col-md-3">
+		<select name="uploaded_by" class="form-select">
+			<option value="">All Uploaders</option>
+			{% for user in users %}
+				<option value="{{ user.id }}" {% if user.id|stringformat:"s" == uploaded_by_id %}selected{% endif %}>
+					{{ user.get_full_name|default:user.username }}
+				</option>
+			{% endfor %}
+		</select>
+	</div>
+	<div class="col-md-2">
+		<button type="submit" class="btn btn-primary w-100">Filter</button>
+	</div>
+</form>
 
 <div class="table-responsive">
 	<table class="table table-hover align-middle">

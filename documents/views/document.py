@@ -9,27 +9,53 @@ from core.permissions import (can_edit_document, has_document_role, get_user_doc
 from projects.models import ProjectMembership
 from core.permissions import get_user_document_role, can_edit_document, can_comment_on_document
 from django.contrib import messages
+from django.contrib.auth.models import User
+from projects.models import Project
 
 @login_required
 def document_list(request):
-	documents = Document.objects.select_related("project").filter(active=True).distinct()
+	user = request.user
+
+	# Base queryset with access restriction
+	queryset = Document.objects.filter(active=True, project__memberships__user=user).distinct()
+
+	# === Filtering logic ===
+	title_query = request.GET.get("title", "").strip()
+	project_id = request.GET.get("project")
+	uploaded_by_id = request.GET.get("uploaded_by")
+
+	if title_query:
+		queryset = queryset.filter(title__icontains=title_query)
+	if project_id:
+		queryset = queryset.filter(project_id=project_id)
+	if uploaded_by_id:
+		queryset = queryset.filter(created_by_id=uploaded_by_id)
 
 	# Preload all user memberships
 	memberships = ProjectMembership.objects.filter(user=request.user).select_related("project")
 	membership_map = {m.project_id: m.role for m in memberships}
 
 	# Role per document based on project
-	user_roles = {doc.id: membership_map.get(doc.project_id, "member") for doc in documents}
+	user_roles = {doc.id: membership_map.get(doc.project_id, "member") for doc in queryset}
 
 	# Permission flags (for template use)
-	can_edit = {doc.id: can_edit_document(request.user, doc) for doc in documents}
-	can_comment = {doc.id: can_comment_on_document(request.user, doc) for doc in documents}
+	can_edit = {doc.id: can_edit_document(request.user, doc) for doc in queryset}
+	can_comment = {doc.id: can_comment_on_document(request.user, doc) for doc in queryset}
 
+	# For dropdowns
+	accessible_projects = Project.objects.filter(id__in=queryset.values("project_id"))
+	uploading_users = User.objects.filter(id__in=queryset.values("created_by_id"))
+	
 	return render(request, "documents/document_list.html", {
-		"documents": documents,
+		"documents": queryset.select_related("project", "created_by"),
 		"user_roles": user_roles,
 		"can_edit": can_edit,
 		"can_comment": can_comment,
+		"projects": accessible_projects,
+		"users": uploading_users,
+		"title_query": title_query,
+		"project_id": project_id,
+		"uploaded_by_id": uploaded_by_id,
 	})
 
 
