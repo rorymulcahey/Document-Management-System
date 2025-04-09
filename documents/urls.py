@@ -4,6 +4,7 @@ from django.conf import settings
 from django.urls import path, include
 from documents.views import document, share, comment
 from auditlog.views import audit_log_filtered_view 
+from documents.views.document import inline_update_document
 
 app_name = "documents"
 
@@ -14,6 +15,7 @@ urlpatterns = [
     path("<int:doc_id>/edit/", document.document_edit, name="edit"),
     path("<int:doc_id>/delete/", document.delete_document, name="delete"),
     path("<int:doc_id>/", document.document_detail, name="detail"),
+    path("inline-update/<int:doc_id>/", inline_update_document, name="inline_update"),
 
     # Upload a new version
     path("<int:doc_id>/upload/", document.upload_version, name="upload"),
@@ -28,6 +30,7 @@ urlpatterns = [
 
     # Auditlog view 
     path("<int:document_id>/audit/", audit_log_filtered_view, name="audit_log"),
+
 ]
 
 if settings.DEBUG:

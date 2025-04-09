@@ -53,9 +53,16 @@
 			{% for document in documents %}
 			<tr>
 				<td>
-					<a href="{% url 'documents:detail' document.id %}" class="fw-semibold text-decoration-none">
-						{{ document.title }}
+					<a href="{% url 'documents:detail' document.id %}" class="folder-link">
+						📁
 					</a>
+					<span class="editable" contenteditable="true"
+						  title="Click to edit title"
+						  data-doc-id="{{ document.id }}"
+						  data-field="title"
+						  data-original="{{ document.title|escape }}">
+						{{ document.title }}
+					</span>
 				</td>
 				<td>{{ document.project.name }}</td>
 				<td>
@@ -94,4 +101,72 @@
 		</tbody>
 	</table>
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+	const csrftoken = getCookie("csrftoken");
+
+	document.querySelectorAll(".doc-link").forEach(link => {
+		link.addEventListener("click", function (e) {
+			e.preventDefault();
+			const docId = this.dataset.docId;
+			const span = document.querySelector(`.editable[data-doc-id="${docId}"]`);
+			this.classList.add("d-none");
+			span.classList.remove("d-none");
+			span.focus();
+		});
+	});
+
+	document.querySelectorAll(".editable").forEach(span => {
+		span.addEventListener("blur", function () {
+			const original = this.dataset.original.trim();
+			const newValue = this.textContent.trim();
+			const docId = this.dataset.docId;
+			const field = this.dataset.field;
+			console.log("Post request");
+			if (newValue === original) return;
+			
+			fetch(`/documents/inline-update/${docId}/`, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/x-www-form-urlencoded",
+					"X-CSRFToken": csrftoken,
+				},
+				body: new URLSearchParams({ field, value: newValue })
+			})
+			.then(res => res.json())
+			.then(data => {
+				if (data.success) {
+					this.dataset.original = newValue;
+					this.classList.add("border", "border-success", "rounded", "px-1");
+					const link = document.querySelector(`.doc-link[data-doc-id="${docId}"]`);
+					link.textContent = newValue;
+					link.classList.remove("d-none");
+					this.classList.add("d-none");
+					setTimeout(() => {
+						this.classList.remove("border", "border-success", "rounded", "px-1");
+					}, 1000);
+				} else {
+					alert(data.error || "Update failed");
+				}
+			});
+		});
+	});
+
+	function getCookie(name) {
+		let cookieValue = null;
+		if (document.cookie && document.cookie !== "") {
+			const cookies = document.cookie.split(";");
+			for (let i = 0; i < cookies.length; i++) {
+				const cookie = cookies[i].trim();
+				if (cookie.startsWith(name + "=")) {
+					cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+					break;
+				}
+			}
+		}
+		return cookieValue;
+	}
+});
+</script>
 {% endblock %}

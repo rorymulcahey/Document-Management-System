@@ -2,7 +2,7 @@
 
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, JsonResponse
 from documents.models import Document
 from documents.forms import DocumentUploadForm, DocumentForm
 from core.permissions import (can_edit_document, has_document_role, get_user_document_role,can_comment_on_document, can_manage_permissions)
@@ -11,6 +11,8 @@ from core.permissions import get_user_document_role, can_edit_document, can_comm
 from django.contrib import messages
 from django.contrib.auth.models import User
 from projects.models import Project
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_protect
 
 @login_required
 def document_list(request):
@@ -159,4 +161,22 @@ def delete_document(request, doc_id):
 
     return render(request, "documents/confirm_delete.html", {"document": document})
 
+@csrf_protect
+@require_POST
+@login_required
+def inline_update_document(request, doc_id):
+	document = get_object_or_404(Document, id=doc_id, active=True)
 
+	if not can_edit_document(request.user, document):
+		return JsonResponse({"error": "Permission denied"}, status=403)
+
+	field = request.POST.get("field")
+	value = request.POST.get("value", "").strip()
+
+	if field not in ["title", "description"]:
+		return JsonResponse({"error": "Invalid field"}, status=400)
+
+	setattr(document, field, value)
+	document.save()
+
+	return JsonResponse({"success": True, "updated": {field: value}})

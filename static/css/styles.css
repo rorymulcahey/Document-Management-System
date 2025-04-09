@@ -80,3 +80,42 @@ a.list-group-item.list-group-item-action:hover {
     text-decoration: none;
     transition: all 0.2s ease-in-out;
 }
+
+.editable {
+	padding: 2px 4px;
+	border: 1px dashed transparent;
+	border-radius: 4px;
+	cursor: text;
+	transition: border-color 0.2s;
+}
+
+.editable:focus {
+	outline: none;
+	border-color: #0d6efd; /* Bootstrap primary */
+	background-color: #f0f8ff;
+}
+
+.editable::after {
+	content: " ✏️";
+	color: #ccc;
+	opacity: 0;
+	transition: opacity 0.2s;
+	font-size: 0.85em;
+}
+
+.editable:hover::after {
+	opacity: 1;
+}
+
+.folder-link {
+	color: inherit;
+	text-decoration: none;
+	transition: transform 0.15s ease, color 0.15s ease;
+	display: inline-block;
+}
+
+.folder-link:hover {
+	transform: scale(1.15);
+	color: #0d6efd; /* Bootstrap primary */
+	cursor: pointer;
+}
