@@ -88,7 +88,7 @@
 							<a href="{% url 'documents:edit' document.id %}" class="btn btn-sm btn-outline-secondary me-2">✏️ Edit</a>
 						{% endif %}
 						{% if can_comment|dict_get:document.id %}
-							<a href="{% url 'documents:comment' document.id %}" class="btn btn-sm btn-outline-secondary">💬 Comment</a>
+							<a href="{% url 'documents:detail' document.id %}#comments" class="btn btn-sm btn-outline-secondary">💬 Comment</a>
 						{% endif %}
 					{% else %}
 						<em>Log in to interact</em>
