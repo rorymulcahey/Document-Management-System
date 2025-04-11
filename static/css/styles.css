@@ -107,15 +107,16 @@ a.list-group-item.list-group-item-action:hover {
 	opacity: 1;
 }
 
-.folder-link {
+.action-icon {
 	color: inherit;
 	text-decoration: none;
 	transition: transform 0.15s ease, color 0.15s ease;
 	display: inline-block;
 }
 
-.folder-link:hover {
+.action-icon:hover {
 	transform: scale(1.15);
 	color: #0d6efd; /* Bootstrap primary */
 	cursor: pointer;
 }
+

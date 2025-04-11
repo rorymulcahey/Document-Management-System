@@ -53,9 +53,6 @@
 			{% for document in documents %}
 			<tr>
 				<td>
-					<a href="{% url 'documents:detail' document.id %}" class="folder-link">
-						📁
-					</a>
 					<span class="editable" contenteditable="true"
 						  title="Click to edit title"
 						  data-doc-id="{{ document.id }}"
@@ -82,16 +79,15 @@
 						{{ user_roles|dict_get:document.id|default:"member"|capfirst }}
 					</span>
 				</td>
-				<td>
+				<td class="text-nowrap">
+					<a href="{% url 'documents:detail' document.id %}" class="action-icon me-2" title="Open">📁</a>
 					{% if user.is_authenticated %}
 						{% if can_edit|dict_get:document.id %}
-							<a href="{% url 'documents:edit' document.id %}" class="btn btn-sm btn-outline-secondary me-2">✏️ Edit</a>
+							<a href="{% url 'documents:edit' document.id %}" class="action-icon me-2" title="Edit">✏️</a>
 						{% endif %}
 						{% if can_comment|dict_get:document.id %}
-							<a href="{% url 'documents:detail' document.id %}#comments" class="btn btn-sm btn-outline-secondary">💬 Comment</a>
+							<a href="{% url 'documents:detail' document.id %}#comments" class="action-icon" title="Comment">💬</a>
 						{% endif %}
-					{% else %}
-						<em>Log in to interact</em>
 					{% endif %}
 				</td>
 			</tr>
