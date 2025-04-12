@@ -12,4 +12,5 @@ urlpatterns = [
         views.audit_log_filtered_view,
         name="filtered_logs",
     ),
+    path("documents/<int:document_id>/logs/export/", views.audit_log_export_csv, name="export_csv"),
 ]

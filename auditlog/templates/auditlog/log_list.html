@@ -5,7 +5,16 @@
 {% block content %}
 <h1 class="mb-4">Audit Log for "{{ document.title }}"</h1>
 
-  <p><a href="{% url 'documents:detail' document.id %}">&larr; Back to Document Detail</a></p>
+<!-- Top Button Controls (Back + Export side by side) -->
+<div class="d-flex align-items-center mb-3 gap-2 flex-wrap">
+	<a href="{% url 'documents:detail' document.id %}" class="btn btn-outline-secondary text-nowrap">
+		← Back to Document Detail
+	</a>
+	<a href="{% url 'auditlog:export_csv' document.id %}" class="btn btn-outline-success text-nowrap">
+		📤 Export CSV
+	</a>
+</div>
+  
 <!-- Filter Controls -->
 <form method="get" class="row g-3 mb-4">
   <div class="col-md-3">
@@ -30,9 +39,11 @@
       <option value="commenter" {% if filters.role == "commenter" %}selected{% endif %}>Commenter</option>
     </select>
   </div>
-  <div class="col-md-2 d-flex align-items-end">
-    <button class="btn btn-outline-primary me-2">Apply</button>
-    <a href="{% url 'documents:audit_log' document.id %}" class="btn btn-outline-secondary">Reset</a>
+  <div class="col-md-2">
+    <button type="submit" class="btn btn-outline-primary text-nowrap">Apply</button>
+	<a href="{% url 'documents:audit_log' document.id %}" class="btn btn-outline-secondary text-nowrap">
+		🔄 Reset
+	</a>
   </div>
 </form>
 
