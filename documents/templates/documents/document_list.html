@@ -80,13 +80,19 @@
 					</span>
 				</td>
 				<td class="text-nowrap">
-					<a href="{% url 'documents:detail' document.id %}" class="action-icon me-2" title="Open">📁</a>
+					<a href="{% url 'documents:detail' document.id %}" class="action-icon me-2" title="Open">
+						<span style="font-size: 1.25rem;">📁</span>
+					</a>
 					{% if user.is_authenticated %}
 						{% if can_edit|dict_get:document.id %}
-							<a href="{% url 'documents:edit' document.id %}" class="action-icon me-2" title="Edit">✏️</a>
+							<a href="{% url 'documents:edit' document.id %}" class="action-icon me-2" title="Edit">
+								<span style="font-size: 1.25rem;">✏️</span>
+							</a>
 						{% endif %}
 						{% if can_comment|dict_get:document.id %}
-							<a href="{% url 'documents:detail' document.id %}#comments" class="action-icon" title="Comment">💬</a>
+							<a href="{% url 'documents:detail' document.id %}#comments" class="action-icon" title="Comment">
+								<span style="font-size: 1.25rem;">💬</span>
+							</a>
 						{% endif %}
 					{% endif %}
 				</td>
