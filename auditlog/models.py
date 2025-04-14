@@ -30,8 +30,10 @@ class ShareActionLog(models.Model):
     action = models.CharField(max_length=32, choices=ACTION_CHOICES)
 
     # Where it happened
-    document = models.ForeignKey(Document, on_delete=models.CASCADE)
+    document = models.ForeignKey(Document, on_delete=models.CASCADE, null=True, blank=True)
     project = models.ForeignKey(Project, on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
-        return f"{self.timestamp} - {self.actor} {self.action} {self.role} for {self.target_user} on {self.document}"
+        location = self.document or self.project
+        location_str = f"on {location}" if location else "with unknown context"
+        return f"{self.timestamp} - {self.actor} {self.action} {self.role} for {self.target_user} {location_str}"

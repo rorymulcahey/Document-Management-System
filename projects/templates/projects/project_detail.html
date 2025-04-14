@@ -159,6 +159,9 @@ document.addEventListener("DOMContentLoaded", function () {
 		.then(data => {
 			if (data.success) {
 				alert("Access updated for " + data.username);
+				const modalEl = document.getElementById('accessModal');
+				const modalInstance = bootstrap.Modal.getInstance(modalEl);
+				modalInstance.hide();
 				location.reload();
 			} else {
 				alert(data.error || "Unknown error");

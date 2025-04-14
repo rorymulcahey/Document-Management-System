@@ -8,6 +8,7 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.contrib.auth.models import User
 from django.views.decorators.http import require_POST
+from auditlog.models import ShareActionLog
 
 @login_required
 def project_list(request):
@@ -137,17 +138,34 @@ def update_project_access(request, project_id):
 	if remove:
 		if entry:
 			entry.delete()
+			
+			ShareActionLog.objects.create(
+				actor=request.user,
+				target_user=target_user,
+				project=project,
+				action="unshared",
+				role=None
+			)
+			
 			return JsonResponse({"success": True, "removed": True, "username": target_user.username})
 		else:
 			return JsonResponse({"error": "User is not a member."}, status=404)
 
-	# Otherwise: add or update role
 	if role not in ["owner", "editor", "viewer"]:
 		return JsonResponse({"error": "Invalid role."}, status=400)
 
 	entry, created = ProjectMembership.objects.get_or_create(project=project, user=target_user)
 	entry.role = role
 	entry.save()
+	
+	action = "shared" if created else "role_changed"
+	ShareActionLog.objects.create(
+		actor=request.user,
+		target_user=target_user,
+		project=project,
+		role=role,
+		action=action
+	)
 
 	return JsonResponse({"success": True, "created": created, "role": role, "username": target_user.username})
 
