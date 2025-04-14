@@ -5,6 +5,9 @@ from django.shortcuts import redirect, render, get_object_or_404
 from projects.models import Project, ProjectMembership
 from .forms import ProjectForm
 from django.contrib import messages
+from django.http import JsonResponse
+from django.contrib.auth.models import User
+from django.views.decorators.http import require_POST
 
 @login_required
 def project_list(request):
@@ -20,21 +23,26 @@ def project_list(request):
 
 @login_required
 def project_detail(request, project_id):
-    project = get_object_or_404(Project, id=project_id, active=True)
+	project = get_object_or_404(Project, id=project_id, active=True)
 
-    # Get role from membership table
-    membership = ProjectMembership.objects.filter(project=project, user=request.user).first()
-    user_role = membership.role if membership else None
+	membership = ProjectMembership.objects.filter(project=project, user=request.user).first()
+	user_role = membership.role if membership else None
 
-    members = ProjectMembership.objects.filter(project=project).select_related("user")
-    documents = project.documents.all()  # using related_name='documents'
+	members = ProjectMembership.objects.filter(project=project).select_related("user")
+	documents = project.documents.all()
 
-    return render(request, "projects/project_detail.html", {
-        "project": project,
-        "user_role": user_role,
-        "members": members,
-        "documents": documents
-    })
+	# 🔹 Add this
+	from django.contrib.auth.models import User
+	all_users = User.objects.exclude(id=request.user.id).order_by("username")
+
+	return render(request, "projects/project_detail.html", {
+		"project": project,
+		"user_role": user_role,
+		"members": members,
+		"documents": documents,
+		"all_users": all_users,
+	})
+
 @login_required
 def create_project(request):
     if request.method == 'POST':
@@ -99,4 +107,43 @@ def delete_project(request, project_id):
         return redirect("projects:list")
 
     return render(request, "projects/confirm_delete.html", {"project": project})
+	
+@require_POST
+@login_required
+def update_project_access(request, project_id):
+	project = get_object_or_404(Project, id=project_id, active=True)
+	membership = ProjectMembership.objects.filter(project=project, user=request.user).first()
+	if not membership or membership.role != "owner":
+		return JsonResponse({"error": "Only owners can modify access."}, status=403)
+
+	target_username = request.POST.get("username")
+	role = request.POST.get("role")
+	remove = request.POST.get("remove") == "1"
+
+	if not target_username:
+		return JsonResponse({"error": "Username is required."}, status=400)
+
+	target_user = User.objects.filter(username=target_username).first()
+	if not target_user:
+		return JsonResponse({"error": "User not found."}, status=404)
+
+	entry = ProjectMembership.objects.filter(project=project, user=target_user).first()
+
+	if remove:
+		if entry:
+			entry.delete()
+			return JsonResponse({"success": True, "removed": True, "username": target_user.username})
+		else:
+			return JsonResponse({"error": "User is not a member."}, status=404)
+
+	# Otherwise: add or update role
+	if role not in ["owner", "editor", "viewer"]:
+		return JsonResponse({"error": "Invalid role."}, status=400)
+
+	entry, created = ProjectMembership.objects.get_or_create(project=project, user=target_user)
+	entry.role = role
+	entry.save()
+
+	return JsonResponse({"success": True, "created": created, "role": role, "username": target_user.username})
+
 	
