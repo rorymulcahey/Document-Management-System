@@ -31,16 +31,21 @@ def project_detail(request, project_id):
 	members = ProjectMembership.objects.filter(project=project).select_related("user")
 	documents = project.documents.all()
 
-	# 🔹 Add this
 	from django.contrib.auth.models import User
 	all_users = User.objects.exclude(id=request.user.id).order_by("username")
+	
+	current_roles = {
+		member.user.username: member.role
+		for member in members
+	}
 
 	return render(request, "projects/project_detail.html", {
 		"project": project,
 		"user_role": user_role,
 		"members": members,
 		"documents": documents,
-		"all_users": all_users,
+		"all_users": User.objects.exclude(id=request.user.id).order_by("username"),
+		"current_roles": current_roles,
 	})
 
 @login_required

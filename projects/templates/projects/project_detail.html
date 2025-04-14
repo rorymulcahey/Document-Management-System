@@ -77,13 +77,18 @@
       </div>
       <div class="modal-body">
 		<div class="mb-3">
-			<label for="username" class="form-label">User</label>
-			<select name="username" id="username" class="form-select" required>
-				<option value="" disabled selected>— Select a user —</option>
-				{% for user in all_users %}
-					<option value="{{ user.username }}">{{ user.get_full_name|default:user.username }}</option>
-				{% endfor %}
-			</select>
+		  <label for="username" class="form-label">Select User</label>
+		  <select name="username" id="username" class="form-select" required>
+			<option value="" disabled selected>Choose user...</option>
+			{% for user in all_users %}
+			  {% with user.username as uname %}
+				<option value="{{ uname }}"
+				  {% if uname in current_roles %}data-member="true"{% endif %}>
+				  {{ uname }}{% if uname in current_roles %} (existing){% endif %}
+				</option>
+			  {% endwith %}
+			{% endfor %}
+		  </select>
 		</div>
 		<div class="mb-3">
 			<label for="role" class="form-label">Role</label>

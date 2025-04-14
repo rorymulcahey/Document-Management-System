@@ -121,3 +121,8 @@ a.list-group-item.list-group-item-action:hover {
 	color: #0d6efd; 
 	cursor: pointer;
 }
+
+select#username option[data-member="true"] {
+	color: #6c757d;
+	font-style: italic;
+}
