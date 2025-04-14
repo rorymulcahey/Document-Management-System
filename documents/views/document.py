@@ -13,6 +13,7 @@ from django.contrib.auth.models import User
 from projects.models import Project
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_protect
+from django.urls import reverse
 
 @login_required
 def document_list(request):
@@ -60,7 +61,6 @@ def document_list(request):
 		"uploaded_by_id": uploaded_by_id,
 	})
 
-
 @login_required
 def document_detail(request, doc_id):
 	document = get_object_or_404(Document, id=doc_id, active=True)
@@ -71,6 +71,32 @@ def document_detail(request, doc_id):
 	can_edit = can_edit_document(request.user, document)
 	can_comment = can_comment_on_document(request.user, document)
 	can_manage = can_manage_permissions(request.user, document)
+	project_members = ProjectMembership.objects.filter(project=document.project).select_related("user")
+
+	# Access modal 
+	access_config = None
+	if can_manage:
+		from django.urls import reverse
+		from django.contrib.auth.models import User
+		from guardian.shortcuts import get_perms
+
+		all_users = User.objects.exclude(id=request.user.id).order_by("username")
+		current_roles = {}
+
+		for user in all_users:
+			perms = get_perms(user, document)
+			if "owner_document" in perms:
+				current_roles[user.username] = "owner"
+			elif "editor_document" in perms:
+				current_roles[user.username] = "editor"
+			elif "commenter_document" in perms:
+				current_roles[user.username] = "commenter"
+
+		access_config = {
+			"post_url": reverse("documents:update_access", args=[document.id]),
+			"all_users": all_users,
+			"current_roles": current_roles
+		}
 
 	return render(request, "documents/document_detail.html", {
 		"document": document,
@@ -80,8 +106,9 @@ def document_detail(request, doc_id):
 		"can_edit": can_edit,
 		"can_comment": can_comment,
 		"can_manage": can_manage,
-    })
-
+		"access_modal_config": access_config, 
+		"members": project_members,
+	})
 
 @login_required
 def upload_version(request, doc_id):

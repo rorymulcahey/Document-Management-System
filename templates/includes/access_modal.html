@@ -1,0 +1,99 @@
+<!-- templates/includes/access_modal.html -->
+
+<div class="modal fade" id="accessModal" tabindex="-1" aria-labelledby="accessModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <form id="access-form" class="modal-content" data-post-url="{{ access_modal_config.post_url }}">
+      {% csrf_token %}
+      <div class="modal-header">
+        <h5 class="modal-title" id="accessModalLabel">Manage Access</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label for="username" class="form-label">Select User</label>
+          <select name="username" id="username" class="form-select" required>
+            <option value="" disabled selected>Choose user...</option>
+            {% for user in access_modal_config.all_users %}
+              {% with user.username as uname %}
+              <option value="{{ uname }}"
+                {% if uname in access_modal_config.current_roles %}data-member="true"{% endif %}>
+                {{ uname }}{% if uname in access_modal_config.current_roles %} (existing){% endif %}
+              </option>
+              {% endwith %}
+            {% endfor %}
+          </select>
+        </div>
+        <div class="mb-3">
+          <label for="role" class="form-label">Role</label>
+          <select name="role" class="form-select" id="role">
+            <option value="commenter">Viewer</option>
+            <option value="editor">Editor</option>
+            <option value="owner">Owner</option>
+          </select>
+        </div>
+        <div class="form-check mb-3">
+          <input class="form-check-input" type="checkbox" value="1" id="remove" name="remove">
+          <label class="form-check-label" for="remove">Remove this user</label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-primary">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const form = document.getElementById("access-form");
+  if (!form) return;
+
+  const postUrl = form.getAttribute("data-post-url");
+  const userSelect = document.getElementById("username");
+  const roleSelect = document.getElementById("role");
+  const removeCheckbox = document.getElementById("remove");
+
+  const currentRoles = {
+    {% for k, v in access_modal_config.current_roles.items %}
+      "{{ k }}": "{{ v }}",
+    {% endfor %}
+  };
+
+  userSelect.addEventListener("change", function () {
+    const selected = this.value;
+    if (currentRoles[selected]) {
+      roleSelect.value = currentRoles[selected];
+    } else {
+      roleSelect.value = "commenter";
+    }
+    removeCheckbox.checked = false;
+  });
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
+    const username = userSelect.value;
+    const role = roleSelect.value;
+    const remove = removeCheckbox.checked;
+
+    fetch(postUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "X-CSRFToken": csrfToken
+      },
+      body: new URLSearchParams({ username, role, remove: remove ? "1" : "" })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        alert("Access updated for " + data.username);
+        bootstrap.Modal.getInstance(document.getElementById("accessModal")).hide();
+        location.reload();
+      } else {
+        alert(data.error || "Unknown error");
+      }
+    });
+  });
+});
+</script>

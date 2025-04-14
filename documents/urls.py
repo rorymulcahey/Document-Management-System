@@ -5,6 +5,7 @@ from django.urls import path, include
 from documents.views import document, share, comment
 from auditlog.views import audit_log_filtered_view 
 from documents.views.document import inline_update_document
+from documents.views import access
 
 app_name = "documents"
 
@@ -28,6 +29,8 @@ urlpatterns = [
     # Comments
     path("<int:document_id>/comment/", comment.post_comment, name="comment"),
 
+	# Permissions
+	path("<int:doc_id>/update-access/", access.update_document_access, name="update_access"),
 ]
 
 if settings.DEBUG:

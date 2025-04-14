@@ -19,6 +19,10 @@
 		  {% if can_manage %}
 			<a href="{% url 'auditlog:doc_logs' document_id=document.id %}" class="btn btn-sm btn-outline-secondary me-2">View Audit Log</a>
 			<a href="{% url 'documents:edit' document.id %}" class="btn btn-sm btn-outline-warning">Edit Document</a>
+			<button class="btn btn-sm btn-outline-primary me-2" data-bs-toggle="modal" data-bs-target="#accessModal">
+			Update Access
+			</button>
+			{% include "includes/access_modal.html" with access_modal_config=access_modal_config %}
 			<a href="{% url 'documents:delete' document.id %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this document?')">Delete Document</a>
 		  {% endif %}
 		</div>
@@ -82,5 +86,25 @@
     </div>
   </div>
 
+  <div class="card mb-4">
+    <div class="card-header">
+      <h5 class="mb-0">Project Members</h5>
+    </div>
+    <div class="card-body">
+      {% if members %}
+        <ul class="list-group list-group-flush">
+          {% for member in members %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <span>{{ member.user.username }}</span>
+              <span class="badge bg-info text-dark text-capitalize">{{ member.role }}</span>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="text-muted">No members assigned.</p>
+      {% endif %}
+    </div>
+  </div>
+  
 </div>
 {% endblock %}
