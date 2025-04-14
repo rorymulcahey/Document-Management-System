@@ -37,7 +37,7 @@ def export_logs_to_csv(logs: Iterable[ShareActionLog]) -> str:
             log.target_user.username if log.target_user else "",
             log.role,
             log.action,
-            log.document.title,
+            log.document.title if log.document else "",
             log.project.name if log.project else "",
         ])
 

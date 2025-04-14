@@ -14,7 +14,7 @@ def audit_log_filtered_view(request, document_id):
     document = get_object_or_404(Document, id=document_id, active=True)
 
     # Base queryset
-    logs = ShareActionLog.objects.filter(document=document).select_related("actor", "target_user")
+    logs = ShareActionLog.objects.filter(document=document).select_related("actor", "target_user").exclude(document=None)
 
     # GET filters
     actor = request.GET.get("actor", "").strip()
@@ -93,3 +93,20 @@ def project_audit_log_view(request, project_id):
 			"role": role,
 		},
 	})
+
+@login_required
+def project_log_export_csv(request, project_id):
+	from projects.models import Project, ProjectMembership
+	project = get_object_or_404(Project, id=project_id, active=True)
+
+	membership = ProjectMembership.objects.filter(project=project, user=request.user).first()
+	if not request.user.is_superuser and (not membership or membership.role != "owner"):
+		return HttpResponseForbidden("Permission denied.")
+
+	logs = ShareActionLog.objects.filter(project=project, document__isnull=True).select_related("actor", "target_user")
+	csv_content = export_logs_to_csv(logs)
+
+	response = HttpResponse(csv_content, content_type="text/csv")
+	response["Content-Disposition"] = f'attachment; filename="project_log_{project_id}.csv"'
+	return response
+
