@@ -3,16 +3,26 @@
 {% block title %}Audit Log – {{ document.title }}{% endblock %}
 
 {% block content %}
-<h1 class="mb-4">Audit Log for "{{ document.title }}"</h1>
+{% if document %}
+	<h1 class="mb-4">Audit Log for Document: "{{ document.title }}"</h1>
+{% elif project %}
+	<h1 class="mb-4">Audit Log for Project: "{{ project.name }}"</h1>
+{% endif %}
+
 
 <!-- Top Button Controls (Back + Export side by side) -->
 <div class="d-flex align-items-center mb-3 gap-2 flex-wrap">
-	<a href="{% url 'documents:detail' document.id %}" class="btn btn-outline-secondary text-nowrap">
-		← Back to Document Detail
-	</a>
-	<a href="{% url 'auditlog:export_csv' document.id %}" class="btn btn-outline-success text-nowrap">
-		📤 Export CSV
-	</a>
+	{% if document %}
+		<a href="{% url 'documents:detail' document.id %}" class="btn btn-outline-secondary">← Back to Document Detail</a>
+		<a href="{% url 'auditlog:export_csv' document.id %}" class="btn btn-outline-success text-nowrap">
+			📤 Export CSV
+		</a>
+	{% elif project %}
+		<a href="{% url 'projects:detail' project.id %}" class="btn btn-outline-secondary">← Back to Project Detail</a>
+		<a href="{% url 'auditlog:project_logs_export' project.id %}" class="btn btn-outline-success text-nowrap">
+			📤 Export CSV
+		</a>
+	{% endif %}
 </div>
   
 <!-- Filter Controls -->
@@ -41,9 +51,11 @@
   </div>
   <div class="col-md-2">
     <button type="submit" class="btn btn-outline-primary text-nowrap">Apply</button>
-	<a href="{% url 'auditlog:doc_logs' document.id %}" class="btn btn-outline-secondary text-nowrap">
-		🔄 Reset
-	</a>
+	{% if document %}
+		<a href="{% url 'auditlog:doc_logs' document.id %}" class="btn btn-outline-secondary text-nowrap">🔄 Reset</a>
+	{% elif project %}
+		<a href="{% url 'auditlog:project_logs' project.id %}" class="btn btn-outline-secondary text-nowrap">🔄 Reset</a>
+	{% endif %}
   </div>
 </form>
 
@@ -95,5 +107,10 @@
   </div>
 </div>
 
-<a href="{% url 'documents:detail' document.id %}" class="btn btn-link mt-3">← Back to Document Detail</a>
+{% if document %}
+	<a href="{% url 'documents:detail' document.id %}" class="btn btn-outline-secondary mt-2">← Back to Document Detail</a>
+{% elif project %}
+	<a href="{% url 'projects:detail' project.id %}" class="btn btn-outline-secondary mt-2">← Back to Project Detail</a>
+{% endif %}
+
 {% endblock %}
