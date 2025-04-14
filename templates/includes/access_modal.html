@@ -59,15 +59,24 @@ document.addEventListener("DOMContentLoaded", function () {
     {% endfor %}
   };
 
-  userSelect.addEventListener("change", function () {
-    const selected = this.value;
-    if (currentRoles[selected]) {
-      roleSelect.value = currentRoles[selected];
-    } else {
-      roleSelect.value = "commenter";
-    }
-    removeCheckbox.checked = false;
-  });
+	userSelect.addEventListener("change", function () {
+	  const selected = this.value;
+	  const isMember = userSelect.options[userSelect.selectedIndex].getAttribute("data-member") === "true";
+
+	  if (currentRoles[selected]) {
+		roleSelect.value = currentRoles[selected];
+	  } else {
+		roleSelect.value = "commenter";
+	  }
+
+	  if (isMember) {
+		removeCheckbox.disabled = false;
+	  } else {
+		removeCheckbox.checked = false;
+		removeCheckbox.disabled = true;
+	  }
+	});
+
 
   form.addEventListener("submit", function (e) {
     e.preventDefault();
