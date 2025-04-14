@@ -41,7 +41,7 @@
   </div>
   <div class="col-md-2">
     <button type="submit" class="btn btn-outline-primary text-nowrap">Apply</button>
-	<a href="{% url 'documents:audit_log' document.id %}" class="btn btn-outline-secondary text-nowrap">
+	<a href="{% url 'auditlog:doc_logs' document.id %}" class="btn btn-outline-secondary text-nowrap">
 		🔄 Reset
 	</a>
   </div>

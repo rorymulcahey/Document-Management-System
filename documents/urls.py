@@ -28,9 +28,6 @@ urlpatterns = [
     # Comments
     path("<int:document_id>/comment/", comment.post_comment, name="comment"),
 
-    # Auditlog view 
-    path("<int:document_id>/audit/", audit_log_filtered_view, name="audit_log"),
-
 ]
 
 if settings.DEBUG:
