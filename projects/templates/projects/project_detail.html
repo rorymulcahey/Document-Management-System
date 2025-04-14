@@ -111,6 +111,28 @@
 document.addEventListener("DOMContentLoaded", function () {
 	const form = document.getElementById("access-form");
 	if (!form) return;
+	
+	const userSelect = document.getElementById("username");
+	const roleSelect = document.getElementById("role");
+	const removeCheckbox = document.getElementById("remove");
+	
+	// Cache all current memberships
+	const currentRoles = {
+		{% for member in members %}
+			"{{ member.user.username }}": "{{ member.role }}",
+		{% endfor %}
+	};
+
+	// Prefill role based on selected user
+	userSelect.addEventListener("change", function () {
+		const selected = this.value;
+		if (currentRoles[selected]) {
+			roleSelect.value = currentRoles[selected];
+		} else {
+			roleSelect.value = "viewer";
+		}
+		removeCheckbox.checked = false;
+	});
 
 	form.addEventListener("submit", function (e) {
 		e.preventDefault();
