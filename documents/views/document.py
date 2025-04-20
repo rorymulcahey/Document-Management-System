@@ -75,6 +75,22 @@ def document_detail(request, doc_id):
 	from guardian.shortcuts import get_perms, get_users_with_perms
 	from projects.models import ProjectMembership
 
+	# --- Build full member list (document-level)
+	doc_users = get_users_with_perms(document, attach_perms=True)
+	members = []
+
+	for user in doc_users:
+		perms = get_perms(user, document)
+		if "owner_document" in perms:
+			role = "owner"
+		elif "editor_document" in perms:
+			role = "editor"
+		elif "commenter_document" in perms:
+			role = "commenter"
+		else:
+			continue
+		members.append((user, role))
+
 	# === Access modal config ===
 	access_config = None
 	members = []
