@@ -24,7 +24,7 @@ class ShareActionLog(models.Model):
     target_user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="audit_target")
 
     # What role was affected
-    role = models.CharField(max_length=32)
+    role = models.CharField(max_length=32, null=True, blank=True)
 
     # What happened
     action = models.CharField(max_length=32, choices=ACTION_CHOICES)

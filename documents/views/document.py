@@ -71,27 +71,35 @@ def document_detail(request, doc_id):
 	can_edit = can_edit_document(request.user, document)
 	can_comment = can_comment_on_document(request.user, document)
 	can_manage = can_manage_permissions(request.user, document)
-	project_members = ProjectMembership.objects.filter(project=document.project).select_related("user")
 
-	# Access modal 
+	from guardian.shortcuts import get_perms, get_users_with_perms
+	from projects.models import ProjectMembership
+
+	# === Access modal config ===
 	access_config = None
+	members = []
+	
 	if can_manage:
-		from django.urls import reverse
-		from django.contrib.auth.models import User
-		from guardian.shortcuts import get_perms
+		project_memberships = ProjectMembership.objects.filter(project=document.project).select_related("user")
+		all_users = [m.user for m in project_memberships if m.user != request.user]
 
-		all_users = User.objects.exclude(id=request.user.id).order_by("username")
 		current_roles = {}
-
 		for user in all_users:
 			perms = get_perms(user, document)
-			if "owner_document" in perms:
-				current_roles[user.username] = "owner"
-			elif "editor_document" in perms:
-				current_roles[user.username] = "editor"
-			elif "commenter_document" in perms:
-				current_roles[user.username] = "commenter"
 
+			if "owner_document" in perms:
+				role = "owner"
+			elif "editor_document" in perms:
+				role = "editor"
+			elif "commenter_document" in perms:
+				role = "commenter"
+			else:
+				continue 
+
+
+			current_roles[user.username] = role
+			members.append((user, role))
+			
 		access_config = {
 			"post_url": reverse("documents:update_access", args=[document.id]),
 			"all_users": all_users,
@@ -106,8 +114,8 @@ def document_detail(request, doc_id):
 		"can_edit": can_edit,
 		"can_comment": can_comment,
 		"can_manage": can_manage,
-		"access_modal_config": access_config, 
-		"members": project_members,
+		"access_modal_config": access_config,
+		"members": members,
 	})
 
 @login_required

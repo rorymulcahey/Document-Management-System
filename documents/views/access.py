@@ -27,6 +27,8 @@ def update_document_access(request, doc_id):
 	if not target_user:
 		return JsonResponse({"error": "User not found"}, status=404)
 
-	update_access(actor=request.user, target_user=target_user, container=document, role=role, remove=remove)
+	result = update_access(actor=request.user, target_user=target_user, container=document, role=role, remove=remove)
+	if "error" in result:
+		return JsonResponse(result, status=400)
+	return JsonResponse(result)
 
-	return JsonResponse({"success": True, "username": target_user.username, "role": role})

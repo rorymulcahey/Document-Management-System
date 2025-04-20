@@ -1,7 +1,8 @@
 # core/access.py
 
 from auditlog.models import ShareActionLog
-from guardian.shortcuts import assign_perm, remove_perm
+from guardian.shortcuts import get_perms, assign_perm, remove_perm
+from projects.models import ProjectMembership
 
 def update_access(actor, target_user, container, role, remove=False):
 	"""
@@ -14,11 +15,31 @@ def update_access(actor, target_user, container, role, remove=False):
 	from projects.models import Project
 
 	if isinstance(container, Document):
+		if not remove:
+			is_member = ProjectMembership.objects.filter(
+				project=container.project,
+				user=target_user
+			).exists()
+			if not is_member:
+				return {"success": False, "error": "User must be a project member to receive document access"}
+
 		if remove:
-			for perm in ["owner_document", "editor_document", "commenter_document"]:
-				remove_perm(perm, target_user, container)
-			action = "unshared"
-			role_value = None
+			current_perms = get_perms(target_user, container)
+			if current_perms:
+				for perm in ["owner_document", "editor_document", "commenter_document"]:
+					remove_perm(perm, target_user, container)
+				ShareActionLog.objects.create(
+					actor=actor,
+					target_user=target_user,
+					document=container,
+					project=container.project,
+					role=None,
+					action="unshared"
+				)
+				return {"success": True, "removed": True, "username": target_user.username}
+			else:
+				return {"success": False, "error": "User had no permissions"}
+		
 		else:
 			perm_map = {
 				"owner": "owner_document",
@@ -28,19 +49,20 @@ def update_access(actor, target_user, container, role, remove=False):
 			for perm in perm_map.values():
 				remove_perm(perm, target_user, container)
 			assign_perm(perm_map[role], target_user, container)
-			action = "shared"  # TODO: detect role_changed
-			role_value = role
 
-		ShareActionLog.objects.create(
-			actor=actor,
-			target_user=target_user,
-			document=container,
-			role=role_value,
-			action=action
-		)
+			ShareActionLog.objects.create(
+				actor=actor,
+				target_user=target_user,
+				document=container,
+				project=container.project,
+				role=role,
+				action="shared"  # TODO: upgrade to "role_changed" if already had perms
+			)
+
+			return {"success": True, "role": role, "username": target_user.username}
 
 	elif isinstance(container, Project):
-		# This branch will be activated later when we refactor projects
+		# Not implemented yet
 		pass
 
 
