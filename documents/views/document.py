@@ -75,47 +75,43 @@ def document_detail(request, doc_id):
 	from guardian.shortcuts import get_perms, get_users_with_perms
 	from projects.models import ProjectMembership
 
-	# --- Build full member list (document-level)
-	doc_users = get_users_with_perms(document, attach_perms=True)
-	members = []
+	# --- Build full member list (doc or project level)
+	permed_map = {}
 
+	# 1. Document-level access (guardian perms)
+	doc_users = get_users_with_perms(document, attach_perms=True)
 	for user in doc_users:
 		perms = get_perms(user, document)
 		if "owner_document" in perms:
-			role = "owner"
+			permed_map[user.id] = (user, "owner")
 		elif "editor_document" in perms:
-			role = "editor"
+			permed_map[user.id] = (user, "editor")
 		elif "commenter_document" in perms:
-			role = "commenter"
-		else:
-			continue
-		members.append((user, role))
+			permed_map[user.id] = (user, "commenter")
 
-	# === Access modal config ===
+	# 2. Project-level fallback (only if no explicit doc perms)
+	project_memberships = ProjectMembership.objects.filter(project=document.project).select_related("user")
+	for m in project_memberships:
+		if m.user.id not in permed_map:
+			permed_map[m.user.id] = (m.user, m.role)
+
+	members = list(permed_map.values())
+
+	# === Access modal config (for update UI)
 	access_config = None
-	members = []
-	
 	if can_manage:
-		project_memberships = ProjectMembership.objects.filter(project=document.project).select_related("user")
 		all_users = [m.user for m in project_memberships if m.user != request.user]
-
 		current_roles = {}
+
 		for user in all_users:
 			perms = get_perms(user, document)
-
 			if "owner_document" in perms:
-				role = "owner"
+				current_roles[user.username] = "owner"
 			elif "editor_document" in perms:
-				role = "editor"
+				current_roles[user.username] = "editor"
 			elif "commenter_document" in perms:
-				role = "commenter"
-			else:
-				continue 
+				current_roles[user.username] = "commenter"
 
-
-			current_roles[user.username] = role
-			members.append((user, role))
-			
 		access_config = {
 			"post_url": reverse("documents:update_access", args=[document.id]),
 			"all_users": all_users,
